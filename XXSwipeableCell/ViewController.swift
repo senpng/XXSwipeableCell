@@ -94,13 +94,23 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell.rightPercentage = CGFloat(Float(rightPercentageLabel.text!)!)
         cell.rightVisiblePercentage = CGFloat(Float(rightVisiblePercentageLabel.text!)!)
         
-        var button = UIButton(type: UIButtonType.DetailDisclosure);
-        button.addTarget(self, action: #selector(ViewController.buttonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
-        cell.backView.addSubview(button)
+        cell.backView.viewWithTag(100)?.removeFromSuperview();
         
-        button = UIButton(type: UIButtonType.DetailDisclosure);
+        var button = UIButton(type: UIButtonType.System);
+        button.setTitle("Button", forState: UIControlState.Normal);
         button.addTarget(self, action: #selector(ViewController.buttonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
+        button.sizeToFit();
+        cell.backView.addSubview(button)
+        button.tag = 100;
+        
+        cell.frontView.viewWithTag(101)?.removeFromSuperview();
+        
+        button = UIButton(type: UIButtonType.System);
+        button.setTitle("Button", forState: UIControlState.Normal);
+        button.addTarget(self, action: #selector(ViewController.buttonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
+        button.sizeToFit();
         cell.frontView.addSubview(button);
+        button.tag = 101;
         
         return cell;
         

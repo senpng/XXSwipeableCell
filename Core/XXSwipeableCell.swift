@@ -34,7 +34,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     public let frontView = UIView();
     public let backView = UIView();
     
-    internal var _overlay = XXOverlayView();
+    internal var _overlayView: XXOverlayView?;
     
     override public init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier);
@@ -61,12 +61,14 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             UIView.animateWithDuration(animationDuration, animations: {
                 self.frontView.frame.origin.x = 0;
                 }, completion: { (finish) in
-                    self._overlay.removeFromSuperview();
+                    self._overlayView?.removeFromSuperview();
+                    self._overlayView = nil;
                     completion?(finish: finish);
             });
         } else {
             self.frontView.frame.origin.x = 0;
-            _overlay.removeFromSuperview();
+            _overlayView?.removeFromSuperview();
+            _overlayView = nil;
             completion?(finish: true);
         }
     }
@@ -153,11 +155,9 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             
             if point.x < 0 { //左滑
                 if rightPercentage > 1 || rightPercentage <= 0 {
-                    UIView.animateWithDuration(animationDuration, animations: {
-                        self.frontView.frame.origin.x = 0;
-                        }, completion: { (finish) in
-                            self.delegate?.swipeableCell?(self, didEndSliding: point);
-                    });
+                    self.close(true, completion: { (finish) in
+                        self.delegate?.swipeableCell?(self, didEndSliding: point);
+                    })
                 } else {
                     if CGRectGetMinX(frontView.frame) < width * rightPercentage * (-1) {
                         UIView.animateWithDuration(animationDuration, animations: {
@@ -168,29 +168,19 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                                 
                                 self.delegate?.swipeableCell?(self, didEndSliding: point);
                                 
-                                self._overlay.removeFromSuperview();
-                                
-                                if let window = self.window {
-                                    self._overlay.frame = window.bounds;
-                                    self._overlay.delegate = self;
-                                    window.addSubview(self._overlay);
-                                }
+                                self.addOverlayView();
                         });
                     } else {
-                        UIView.animateWithDuration(animationDuration, animations: {
-                            self.frontView.frame.origin.x = 0;
-                            }, completion: { (finish) in
+                        self.close(true, completion: { (finish) in
                             self.delegate?.swipeableCell?(self, didEndSliding: point);
-                        });
+                        })
                     }
                 }
             } else { //右滑
                 if leftPercentage > 1 || leftPercentage <= 0 {
-                    UIView.animateWithDuration(animationDuration, animations: {
-                        self.frontView.frame.origin.x = 0;
-                        }, completion: { (finish) in
+                    self.close(true, completion: { (finish) in
                         self.delegate?.swipeableCell?(self, didEndSliding: point);
-                    });
+                    })
                 } else {
                     if CGRectGetMinX(frontView.frame) > width * leftPercentage {
                         
@@ -202,21 +192,13 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                                 
                                 self.delegate?.swipeableCell?(self, didEndSliding: point);
                                 
-                                self._overlay.removeFromSuperview();
-                                
-                                if let window = self.window {
-                                    self._overlay.frame = window.bounds;
-                                    self._overlay.delegate = self;
-                                    window.addSubview(self._overlay);
-                                }
+                                self.addOverlayView();
                         });
                         
                     } else {
-                        UIView.animateWithDuration(animationDuration, animations: {
-                            self.frontView.frame.origin.x = 0;
-                            }, completion: { (finish) in
+                        self.close(true, completion: { (finish) in
                             self.delegate?.swipeableCell?(self, didEndSliding: point);
-                        });
+                        })
                     }
                 }
             }
@@ -227,10 +209,22 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         
     }
     
+    private func addOverlayView() {
+        self._overlayView?.removeFromSuperview();
+        
+        self._overlayView = XXOverlayView();
+        
+        if let window = self.window {
+            self._overlayView?.frame = window.bounds;
+            self._overlayView?.delegate = self;
+            window.addSubview(self._overlayView!);
+        }
+    }
+    
     // MARK: - UIPanGestureRecognizerDelegate
     override public func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
         
-        if self.editing {
+        if self.editing || self._overlayView != nil {
             return false;
         }
 
@@ -245,21 +239,33 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         return false;
     }
     
+    private var removingOverlayView = false;
     // MARK: - OverlayViewDelegate
     public func overlayView(view: XXOverlayView, didHitTest point: CGPoint, withEvent event: UIEvent?) -> UIView? {
         
-//        if CGRectContainsPoint(frontView.frame, view.convertPoint(point, toView: self.contentView)) {
-//            return frontView;
-//        }
-//        
-//        if CGRectContainsPoint(backView.frame, view.convertPoint(point, toView: self.contentView)) {
-//            return backView;
-//        }
-        
-        UIView.animateWithDuration(animationDuration) {
-            self.frontView.frame.origin.x = 0
+        var p = frontView.convertPoint(point, fromView: view);
+        if frontView.pointInside(p, withEvent: event) {
+            let result = frontView.hitTest(p, withEvent: event);
+            if result !== frontView {
+                return result;
+            }
         }
-        view.removeFromSuperview();
+
+        p = backView.convertPoint(point, fromView: view);
+        if backView.pointInside(p, withEvent: event) {
+            let result = backView.hitTest(p, withEvent: event);
+            if result !== backView {
+                return result;
+            }
+        }
+        
+        if !removingOverlayView {
+            removingOverlayView = true;
+            
+            self.close(true, completion: { (finish) in
+                self.removingOverlayView = false;
+            })
+        }
         
         return nil;
     }
@@ -275,7 +281,14 @@ public class XXOverlayView: UIView {
     weak var delegate: XXOverlayViewDelegate?
     
     override public func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
-        return self.delegate?.overlayView?(self, didHitTest: point, withEvent: event);
+        
+        var result = self.delegate?.overlayView?(self, didHitTest: point, withEvent: event);
+        
+        if result == nil {
+            result = super.hitTest(point, withEvent: event);
+        }
+        
+        return result;
     }
     
 }
