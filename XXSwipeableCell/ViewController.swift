@@ -44,7 +44,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     @IBAction func slidingAction(sender: UISlider) {
         
-        let str = NSString(format: "%.1f", Float(sender.value)) as String;
+        let str = NSString(format: "%.2f", Float(sender.value)) as String;
         
         switch sender.tag {
         case 1:

@@ -22,10 +22,10 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     public var leftPercentage: CGFloat = -1.0;
     
     /// 右滑动显示触发比例 0<x<1, if > 1 or <= 0 rightVisiblePerCentage作为阻塞滑动参数
-    public var rightPercentage: CGFloat = 0.2;
+    public var rightPercentage: CGFloat = 0.15;
     
     /// 左边显示比例 0 <= x <= 1
-    public var leftVisiblePercentage: CGFloat = 0.1;
+    public var leftVisiblePercentage: CGFloat = 0.05;
     
     /// 右边显示比例 0 <= x <= 1
     public var rightVisiblePercentage: CGFloat = 1.0;
