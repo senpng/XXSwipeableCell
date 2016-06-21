@@ -28,7 +28,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     public var leftVisiblePercentage: CGFloat = 0.1;
     
     /// 右边显示比例 0 <= x <= 1
-    public var rightVisiblePerCentage: CGFloat = 1.0;
+    public var rightVisiblePercentage: CGFloat = 1.0;
     
     
     public let frontView = UIView();
@@ -110,8 +110,8 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                 
                 if rightPercentage > 1 || rightPercentage <= 0 {
                     
-                    if CGRectGetMinX(frontView.frame) > width * rightVisiblePerCentage * (-1)  {
-                        frontView.frame.origin.x = width * rightVisiblePerCentage * (-1);
+                    if CGRectGetMinX(frontView.frame) < width * rightVisiblePercentage * (-1)  {
+                        frontView.frame.origin.x = width * rightVisiblePercentage * (-1);
                     }
                     
                 }
@@ -143,7 +143,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                     if CGRectGetMinX(frontView.frame) < width * rightPercentage * (-1) {
                         UIView.animateWithDuration(animationDuration, animations: {
                             
-                            self.frontView.frame.origin.x = -width*self.rightVisiblePerCentage;
+                            self.frontView.frame.origin.x = -width*self.rightVisiblePercentage;
                             
                             }, completion: { (finish) in
                                 
