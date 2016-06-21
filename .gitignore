@@ -1,0 +1,10 @@
+# 以'#' 开始的行，被视为注释.
+# 忽略 pods、.svn 文件夹,
+pods/
+.svn/
+# 忽略 Podfile.lock、*.xcworkspace、.DS_Store 文件
+Podfile.lock
+*.xcworkspace
+.DS_Store
+xcuserdata/
+xcshareddata/
