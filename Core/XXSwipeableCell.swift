@@ -15,6 +15,9 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     
     weak public var delegate: XXSwipeableCellDelegate?;
     
+    /// 是否支持多个Cell滑动状态保持 默认false
+    public static var enableMultipleSliding: Bool = false;
+    
     /// 动画时间
     public var animationDuration = 0.2;
     
@@ -63,12 +66,16 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                 }, completion: { (finish) in
                     self._overlayView?.removeFromSuperview();
                     self._overlayView = nil;
+                    self.removeTapGestureRecognizer(self.frontView);
+                    self.removeTapGestureRecognizer(self.backView);
                     completion?(finish: finish);
             });
         } else {
             self.frontView.frame.origin.x = 0;
             _overlayView?.removeFromSuperview();
             _overlayView = nil;
+            self.removeTapGestureRecognizer(self.frontView);
+            self.removeTapGestureRecognizer(self.backView);
             completion?(finish: true);
         }
     }
@@ -212,19 +219,42 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     private func addOverlayView() {
         self._overlayView?.removeFromSuperview();
         
-        self._overlayView = XXOverlayView();
+        if XXSwipeableCell.enableMultipleSliding == false {
+            self._overlayView = XXOverlayView();
+            
+            if let window = self.window {
+                self._overlayView?.frame = window.bounds;
+                self._overlayView?.delegate = self;
+                window.addSubview(self._overlayView!);
+            }
+        }
         
-        if let window = self.window {
-            self._overlayView?.frame = window.bounds;
-            self._overlayView?.delegate = self;
-            window.addSubview(self._overlayView!);
+        frontView.addGestureRecognizer(UITapGestureRecognizer { (tapG) in
+            self.close(true);
+        });
+        
+        backView.addGestureRecognizer(UITapGestureRecognizer { (tapG) in
+            self.close(true);
+        });
+    }
+    
+    func removeTapGestureRecognizer(view: UIView) {
+        
+        guard let gestureRecognizers = view.gestureRecognizers where gestureRecognizers.count > 0 else {
+            return;
+        }
+        
+        for g in gestureRecognizers {
+            if g is UITapGestureRecognizer {
+                view.removeGestureRecognizer(g);
+            }
         }
     }
     
     // MARK: - UIPanGestureRecognizerDelegate
     override public func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
         
-        if self.editing || self._overlayView != nil {
+        if self.editing {
             return false;
         }
 
@@ -245,18 +275,12 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         
         var p = frontView.convertPoint(point, fromView: view);
         if frontView.pointInside(p, withEvent: event) {
-            let result = frontView.hitTest(p, withEvent: event);
-            if result !== frontView {
-                return result;
-            }
+            return frontView.hitTest(p, withEvent: event);
         }
 
         p = backView.convertPoint(point, fromView: view);
         if backView.pointInside(p, withEvent: event) {
-            let result = backView.hitTest(p, withEvent: event);
-            if result !== backView {
-                return result;
-            }
+            return backView.hitTest(p, withEvent: event);
         }
         
         if !removingOverlayView {
@@ -289,6 +313,44 @@ public class XXOverlayView: UIView {
         }
         
         return result;
+    }
+}
+
+extension UITapGestureRecognizer {
+    
+    typealias ActionBlock = @convention(block) (tapG: UITapGestureRecognizer)->Void;
+    
+    private struct AssociatedKeys {
+        static var actionBlockKey = "actionBlockKey"
+    }
+    
+    private var actionBlock: ActionBlock? {
+        set {
+            
+            if let value = newValue {
+                objc_setAssociatedObject(self, &AssociatedKeys.actionBlockKey, unsafeBitCast(value, AnyObject.self), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+            }
+        }
+        
+        get {
+            guard let object = objc_getAssociatedObject(self, &AssociatedKeys.actionBlockKey) else {
+                return nil;
+            }
+
+            return unsafeBitCast(object, ActionBlock.self);
+        }
+    }
+    
+    convenience init(block: ActionBlock) {
+        self.init(target: nil, action: nil);
+        
+        self.addTarget(self, action: #selector(UITapGestureRecognizer.tapAction(_:)))
+        
+        self.actionBlock = block;
+    }
+    
+    @objc private func tapAction(tapG: UITapGestureRecognizer) {
+        self.actionBlock?(tapG: self)
     }
     
 }
