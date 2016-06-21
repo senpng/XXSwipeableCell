@@ -64,6 +64,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
     }
     
+    func buttonAction(sender: UIButton) {
+        print(sender)
+    }
+    
     // MARK: - UITableViewDelegate, UITableViewDataSource
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 10;
@@ -90,8 +94,23 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell.rightPercentage = CGFloat(Float(rightPercentageLabel.text!)!)
         cell.rightVisiblePercentage = CGFloat(Float(rightVisiblePercentageLabel.text!)!)
         
+        var button = UIButton(type: UIButtonType.DetailDisclosure);
+        button.addTarget(self, action: #selector(ViewController.buttonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
+        cell.backView.addSubview(button)
+        
+        button = UIButton(type: UIButtonType.DetailDisclosure);
+        button.addTarget(self, action: #selector(ViewController.buttonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
+        cell.frontView.addSubview(button);
+        
         return cell;
         
+    }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        print("tableViewCell didSelect");
+        if let cell = tableView.cellForRowAtIndexPath(indexPath) as? XXSwipeableCell {
+            cell.close(true);
+        }
     }
 
 }

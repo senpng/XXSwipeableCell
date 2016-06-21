@@ -34,7 +34,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     public let frontView = UIView();
     public let backView = UIView();
     
-    private var _overlay = XXOverlayView();
+    internal var _overlay = XXOverlayView();
     
     override public init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier);
@@ -52,7 +52,26 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         // Configure the view for the selected state
     }
     
-    internal func initView() {
+    public func close(animated: Bool) {
+        self.close(animated, completion: nil);
+    }
+    
+    public func close(animated: Bool, completion: ((finish: Bool)->Void)?) {
+        if animated {
+            UIView.animateWithDuration(animationDuration, animations: {
+                self.frontView.frame.origin.x = 0;
+                }, completion: { (finish) in
+                    self._overlay.removeFromSuperview();
+                    completion?(finish: finish);
+            });
+        } else {
+            self.frontView.frame.origin.x = 0;
+            _overlay.removeFromSuperview();
+            completion?(finish: true);
+        }
+    }
+    
+    private func initView() {
         
         self.contentView.addSubview(backView);
         setViewFillConstraint(backView);
@@ -71,7 +90,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         backView.addGestureRecognizer(backViewPan);
     }
     
-    internal func setViewFillConstraint(v: UIView) {
+    private func setViewFillConstraint(v: UIView) {
         
         v.translatesAutoresizingMaskIntoConstraints = false;
         
@@ -84,9 +103,9 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
 
     }
     
-    var savedFrame = CGRectZero;
+    private var savedFrame = CGRectZero;
     // MARK: - Actions
-    func panAction(panG: UIPanGestureRecognizer) {
+    @objc private func panAction(panG: UIPanGestureRecognizer) {
         
         let point = panG.translationInView(self.contentView);
         let width = CGRectGetWidth(self.contentView.bounds);
@@ -229,12 +248,14 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     // MARK: - OverlayViewDelegate
     public func overlayView(view: XXOverlayView, didHitTest point: CGPoint, withEvent event: UIEvent?) -> UIView? {
         
-        if CGRectContainsPoint(self.contentView.frame, view.convertPoint(point, toView: self.contentView)) {
-            if CGRectGetMinX(frontView.frame) < 0 {
-                return backView
-            }
-            return frontView;
-        }
+//        if CGRectContainsPoint(frontView.frame, view.convertPoint(point, toView: self.contentView)) {
+//            return frontView;
+//        }
+//        
+//        if CGRectContainsPoint(backView.frame, view.convertPoint(point, toView: self.contentView)) {
+//            return backView;
+//        }
+        
         UIView.animateWithDuration(animationDuration) {
             self.frontView.frame.origin.x = 0
         }
@@ -242,7 +263,6 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         
         return nil;
     }
-
 
 }
 
