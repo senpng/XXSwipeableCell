@@ -4,7 +4,7 @@
 
 import UIKit
 
-@objc public protocol XXSwipeableCellDelegate {
+@objc public protocol XXSwipeableCellDelegate: NSObjectProtocol {
     optional func swipeableCell(cell: XXSwipeableCell, willBeginSliding slidingPoint: CGPoint)
     optional func swipeableCell(cell: XXSwipeableCell, didSliding slidingPoint: CGPoint)
     optional func swipeableCell(cell: XXSwipeableCell, willEndSliding slidingPoint: CGPoint)
