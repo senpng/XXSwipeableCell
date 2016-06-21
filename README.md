@@ -3,4 +3,4 @@
 
 Example见项目中Demo
 
-
+![XXSwipeableCell](XXSwipeableCell.gif)
