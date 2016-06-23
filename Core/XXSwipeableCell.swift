@@ -16,7 +16,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     weak public var delegate: XXSwipeableCellDelegate?;
     
     /// 是否支持多个Cell滑动状态保持 默认false
-    public static var enableMultipleSliding: Bool = false;
+    public static var enabledMultipleSliding: Bool = false;
     
     /// 动画时间
     public var animationDuration = 0.2;
@@ -37,7 +37,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     public let frontView = UIView();
     public let backView = UIView();
     
-    internal var _overlayView: XXOverlayView?;
+    internal var overlayView: XXOverlayView?;
     
     override public init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier);
@@ -64,16 +64,16 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             UIView.animateWithDuration(animationDuration, animations: {
                 self.frontView.frame.origin.x = 0;
                 }, completion: { (finish) in
-                    self._overlayView?.removeFromSuperview();
-                    self._overlayView = nil;
+                    self.overlayView?.removeFromSuperview();
+                    self.overlayView = nil;
                     self.removeTapGestureRecognizer(self.frontView);
                     self.removeTapGestureRecognizer(self.backView);
                     completion?(finish: finish);
             });
         } else {
             self.frontView.frame.origin.x = 0;
-            _overlayView?.removeFromSuperview();
-            _overlayView = nil;
+            overlayView?.removeFromSuperview();
+            overlayView = nil;
             self.removeTapGestureRecognizer(self.frontView);
             self.removeTapGestureRecognizer(self.backView);
             completion?(finish: true);
@@ -217,15 +217,15 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     }
     
     private func addOverlayView() {
-        self._overlayView?.removeFromSuperview();
+        self.overlayView?.removeFromSuperview();
         
-        if XXSwipeableCell.enableMultipleSliding == false {
-            self._overlayView = XXOverlayView();
+        if XXSwipeableCell.enabledMultipleSliding == false {
+            self.overlayView = XXOverlayView();
             
             if let window = self.window {
-                self._overlayView?.frame = window.bounds;
-                self._overlayView?.delegate = self;
-                window.addSubview(self._overlayView!);
+                self.overlayView?.frame = window.bounds;
+                self.overlayView?.delegate = self;
+                window.addSubview(self.overlayView!);
             }
         }
         
@@ -238,7 +238,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         });
     }
     
-    func removeTapGestureRecognizer(view: UIView) {
+    private func removeTapGestureRecognizer(view: UIView) {
         
         guard let gestureRecognizers = view.gestureRecognizers where gestureRecognizers.count > 0 else {
             return;
@@ -253,20 +253,14 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     
     // MARK: - UIPanGestureRecognizerDelegate
     override public func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
-        
-        if self.editing {
-            return false;
-        }
-
-        
         if let panG = gestureRecognizer as? UIPanGestureRecognizer {
-            
+            if self.editing {
+                return false;
+            }
             let distance = panG.translationInView(self);
-            
             return abs(distance.x) > abs(distance.y);
         }
-        
-        return false;
+        return true;
     }
     
     private var removingOverlayView = false;
@@ -291,6 +285,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             })
         }
         
+        //如果需要支持某个cell已经滑动展开，并且可以滑动其它cell，则返回nil。当某个cell滑动展开，需要无法滑动其它cell，可以返回view(XXOverlayView)
         return nil;
     }
 
@@ -304,11 +299,13 @@ public class XXOverlayView: UIView {
     
     weak var delegate: XXOverlayViewDelegate?
     
+    
+    
     override public func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
         
         var result = self.delegate?.overlayView?(self, didHitTest: point, withEvent: event);
         
-        if result == nil {
+        if result === self {
             result = super.hitTest(point, withEvent: event);
         }
         
@@ -316,7 +313,7 @@ public class XXOverlayView: UIView {
     }
 }
 
-extension UITapGestureRecognizer {
+public extension UITapGestureRecognizer {
     
     typealias ActionBlock = @convention(block) (tapG: UITapGestureRecognizer)->Void;
     
@@ -341,7 +338,7 @@ extension UITapGestureRecognizer {
         }
     }
     
-    convenience init(block: ActionBlock) {
+    convenience public init(block: ActionBlock) {
         self.init(target: nil, action: nil);
         
         self.addTarget(self, action: #selector(UITapGestureRecognizer.tapAction(_:)))
