@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "XXSwipeableCell"
-  s.version      = "1.0.2"
+  s.version      = "1.0.3"
   s.summary      = "一个滑动式的UITableViewCell."
 
   # This description is used to generate tags and improve search results.
