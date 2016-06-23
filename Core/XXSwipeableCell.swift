@@ -18,6 +18,15 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     /// 是否支持多个Cell滑动状态保持 默认false
     public static var enabledMultipleSliding: Bool = false;
     
+    /// 开启滑动功能
+    public var enabledSliding: Bool = true {
+        didSet {
+            if enabledSliding == false {
+                self.close(false);
+            }
+        }
+    };
+    
     /// 动画时间
     public var animationDuration = 0.2;
     
@@ -254,7 +263,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     // MARK: - UIPanGestureRecognizerDelegate
     override public func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
         if let panG = gestureRecognizer as? UIPanGestureRecognizer {
-            if self.editing {
+            if enabledSliding == false {
                 return false;
             }
             let distance = panG.translationInView(self);
