@@ -133,11 +133,11 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             
             savedFrame = frontView.frame;
             
-            delegate?.swipeableCell?(self, willBeginSliding: point);
+            self.willBeginSliding(point);
             
         case .Changed:
             
-            delegate?.swipeableCell?(self, didSliding: point);
+            self.didSliding(point);
             
             let offsetX = CGRectGetMinX(savedFrame) + point.x;
             
@@ -167,12 +167,12 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             
         case .Ended:
             
-            delegate?.swipeableCell?(self, willEndSliding: point);
+            self.willEndSliding(point);
             
             if point.x < 0 { //左滑
                 if rightPercentage > 1 || rightPercentage <= 0 {
                     self.close(true, completion: { (finish) in
-                        self.delegate?.swipeableCell?(self, didEndSliding: point);
+                        self.didEndSliding(point);
                     })
                 } else {
                     if CGRectGetMinX(frontView.frame) < width * rightPercentage * (-1) {
@@ -182,20 +182,20 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                             
                             }, completion: { (finish) in
                                 
-                                self.delegate?.swipeableCell?(self, didEndSliding: point);
-                                
                                 self.addOverlayView();
+                                
+                                self.didEndSliding(point);
                         });
                     } else {
                         self.close(true, completion: { (finish) in
-                            self.delegate?.swipeableCell?(self, didEndSliding: point);
+                            self.didEndSliding(point);
                         })
                     }
                 }
             } else { //右滑
                 if leftPercentage > 1 || leftPercentage <= 0 {
                     self.close(true, completion: { (finish) in
-                        self.delegate?.swipeableCell?(self, didEndSliding: point);
+                        self.didEndSliding(point);
                     })
                 } else {
                     if CGRectGetMinX(frontView.frame) > width * leftPercentage {
@@ -206,14 +206,14 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                             
                             }, completion: { (finish) in
                                 
-                                self.delegate?.swipeableCell?(self, didEndSliding: point);
-                                
                                 self.addOverlayView();
+                                
+                                self.didEndSliding(point);
                         });
                         
                     } else {
                         self.close(true, completion: { (finish) in
-                            self.delegate?.swipeableCell?(self, didEndSliding: point);
+                            self.didEndSliding(point);
                         })
                     }
                 }
@@ -298,6 +298,22 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         return nil;
     }
 
+    /// Override need super.
+    func willBeginSliding(slidingPoint: CGPoint) {
+        delegate?.swipeableCell?(self, willBeginSliding: slidingPoint);
+    }
+    
+    func didSliding(slidingPoint: CGPoint) {
+        delegate?.swipeableCell?(self, didSliding: slidingPoint);
+    }
+    
+    func willEndSliding(slidingPoint: CGPoint) {
+        delegate?.swipeableCell?(self, willEndSliding: slidingPoint);
+    }
+    
+    func didEndSliding(slidingPoint: CGPoint) {
+        delegate?.swipeableCell?(self, didEndSliding: slidingPoint);
+    }
 }
 
 @objc public protocol XXOverlayViewDelegate {
