@@ -36,7 +36,12 @@ pod "XXSwipeableCell"
     
     /// The visible percentage on the right: 0 <= x <= 1
     public var rightVisiblePercentage: CGFloat = 1.0;
+    
+    /// Cover the entire screen, disappear when you click on the screen.
+    public class XXOverlayView: UIView
+
 ```
+When you restore the origin location of cell without calling the method : cell.close(true);  you have to remove the XXOverlayView Manually by calling the method : cell.overlayView?.removeFromSuperview(); Otherwise there will be some problems.
 
 Then, you can adjust these properties to achieve the result that you want in your project. Such as:
 
@@ -46,6 +51,7 @@ Then, you can adjust these properties to achieve the result that you want in you
         cell.rightPercentage = 0.25
         cell.rightVisiblePercentage = 0.5
 ```
+
 In addition, you can add any UI and actions to the `frontView` or `backView` in `XXSwipeableCell`. I add a `UIButton` to both of them here :
 
 ```
@@ -69,3 +75,6 @@ In addition, you can add any UI and actions to the `frontView` or `backView` in 
 The Demo in this project is an example:
 
 ![XXSwipeableCell](XXSwipeableCell.gif)
+
+
+
