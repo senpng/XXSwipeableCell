@@ -15,10 +15,10 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     
     weak public var delegate: XXSwipeableCellDelegate?;
     
-    /// 是否支持多个Cell滑动状态保持 默认false
+    /// Whether to support multiple cells keep sliding state, default is false.
     public static var enabledMultipleSliding: Bool = false;
     
-    /// 开启滑动功能
+    /// Open the sliding function
     public var enabledSliding: Bool = true {
         didSet {
             if enabledSliding == false {
@@ -27,24 +27,27 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         }
     };
     
-    /// 动画时间
+    /// The duration of the animation
     public var animationDuration = 0.2;
     
-    /// 左滑动显示触发比例 0<x<=1, if > 1 or <= 0 leftVisiblePercentage作为阻塞滑动参数
+    /// The trigger ratio of left slide: 0<x<=1, if > 1 or <= 0 leftVisiblePercentage as a block sliding parameter
     public var leftPercentage: CGFloat = -1.0;
     
-    /// 右滑动显示触发比例 0<x<1, if > 1 or <= 0 rightVisiblePerCentage作为阻塞滑动参数
+    /// The trigger ratio of right slide : 0<x<1, if > 1 or <= 0 rightVisiblePerCentage as a block sliding parameter
     public var rightPercentage: CGFloat = 0.15;
     
-    /// 左边显示比例 0 <= x <= 1
+    /// The visible percentage on the left: 0 <= x <= 1
     public var leftVisiblePercentage: CGFloat = 0.05;
     
-    /// 右边显示比例 0 <= x <= 1
+    /// The visible percentage on the right: 0 <= x <= 1
     public var rightVisiblePercentage: CGFloat = 1.0;
     
-    
+    /// The front view in cell.
     public let frontView = UIView();
+    
+    /// The back view in cell.
     public let backView = UIView();
+    
     
     internal var overlayView: XXOverlayView?;
     
@@ -64,12 +67,26 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         // Configure the view for the selected state
     }
     
+    
+    /**
+     Whether an animation is required when close view.
+     
+     - parameter animated: BOOL, default is false.
+     */
     public func close(animated: Bool) {
         self.close(animated, completion: nil);
     }
-    
+
+    /**
+     Whether an animation is required and completion action when close view.
+     
+     - parameter animated:   BOOL, default is false.
+     - parameter completion: default is nil.
+     */
     public func close(animated: Bool, completion: ((finish: Bool)->Void)?) {
-        if animated {
+        
+        if animated { // Need animation.
+            
             UIView.animateWithDuration(animationDuration, animations: {
                 self.frontView.frame.origin.x = 0;
                 }, completion: { (finish) in
@@ -79,7 +96,8 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                     self.removeTapGestureRecognizer(self.backView);
                     completion?(finish: finish);
             });
-        } else {
+        } else { /// Don't need animation.
+            
             self.frontView.frame.origin.x = 0;
             overlayView?.removeFromSuperview();
             overlayView = nil;
@@ -89,6 +107,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         }
     }
     
+    /// Initialize
     private func initView() {
         
         self.contentView.addSubview(backView);
@@ -97,7 +116,6 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         frontView.backgroundColor = UIColor.whiteColor();
         self.contentView.addSubview(frontView);
         setViewFillConstraint(frontView);
-        
         
         let frontViewPan = UIPanGestureRecognizer(target: self, action: #selector(XXSwipeableCell.panAction(_:)));
         frontViewPan.delegate = self;
@@ -108,6 +126,11 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         backView.addGestureRecognizer(backViewPan);
     }
     
+    /**
+     Set up the constraints of view
+     
+     - parameter v: the view to set up the constraints
+     */
     private func setViewFillConstraint(v: UIView) {
         
         v.translatesAutoresizingMaskIntoConstraints = false;
@@ -122,7 +145,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     }
     
     private var savedFrame = CGRectZero;
-    // MARK: - Actions
+    // MARK: - pan Actions
     @objc private func panAction(panG: UIPanGestureRecognizer) {
         
         let point = panG.translationInView(self.contentView);
@@ -130,7 +153,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         
         switch panG.state {
         case .Began:
-            
+        
             savedFrame = frontView.frame;
             
             self.willBeginSliding(point);
@@ -143,7 +166,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             
             frontView.frame.origin.x = offsetX;
             
-            if point.x < 0 { //左滑
+            if point.x < 0 { // left slide
                 
                 if rightPercentage > 1 || rightPercentage <= 0 {
                     
@@ -153,7 +176,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                     
                 }
                 
-            } else { //右滑
+            } else { // right slide
                 
                 if leftPercentage > 1 || leftPercentage <= 0 {
                     
@@ -169,7 +192,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             
             self.willEndSliding(point);
             
-            if point.x < 0 { //左滑
+            if point.x < 0 { // left slide
                 if rightPercentage > 1 || rightPercentage <= 0 {
                     self.close(true, completion: { (finish) in
                         self.didEndSliding(point);
@@ -192,7 +215,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                         })
                     }
                 }
-            } else { //右滑
+            } else { // right slide
                 if leftPercentage > 1 || leftPercentage <= 0 {
                     self.close(true, completion: { (finish) in
                         self.didEndSliding(point);
@@ -225,12 +248,13 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         
     }
     
+    /// Add XXOverlayView
     private func addOverlayView() {
         self.overlayView?.removeFromSuperview();
         
         if XXSwipeableCell.enabledMultipleSliding == false {
             self.overlayView = XXOverlayView();
-            
+                     
             if let window = self.window {
                 self.overlayView?.frame = window.bounds;
                 self.overlayView?.delegate = self;
@@ -247,6 +271,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         });
     }
     
+    ///  Remove the gestures on view
     private func removeTapGestureRecognizer(view: UIView) {
         
         guard let gestureRecognizers = view.gestureRecognizers where gestureRecognizers.count > 0 else {
@@ -294,7 +319,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             })
         }
         
-        //如果需要支持某个cell已经滑动展开，并且可以滑动其它cell，则返回nil。当某个cell滑动展开，需要无法滑动其它cell，可以返回view(XXOverlayView)
+        // If you need to support a cell has been slided to expand, and can slide other cells, it returns nil. When a cell was slided to expand, you need to can not slide other cells, can return view (XXOverlayView).
         return nil;
     }
 
@@ -316,15 +341,15 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     }
 }
 
+// MARK: - XXOverlayView
 @objc public protocol XXOverlayViewDelegate {
     optional func overlayView(view: XXOverlayView, didHitTest point: CGPoint, withEvent event: UIEvent?) -> UIView?;
 }
 
+/// Cover the entire screen, disappear when you click on the screen.
 public class XXOverlayView: UIView {
     
     weak var delegate: XXOverlayViewDelegate?
-    
-    
     
     override public func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
         
@@ -338,6 +363,7 @@ public class XXOverlayView: UIView {
     }
 }
 
+// MARK: - extension for UITapGestureRecognizer
 public extension UITapGestureRecognizer {
     
     typealias ActionBlock = @convention(block) (tapG: UITapGestureRecognizer)->Void;

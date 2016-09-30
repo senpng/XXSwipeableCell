@@ -17,6 +17,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBOutlet weak var rightPercentageLabel: UILabel!
     @IBOutlet weak var rightVisiblePercentageLabel: UILabel!
     
+    var dataArray = Array (count: 10 , repeatedValue: 0 ) ;
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "XXSwipeableCell";
@@ -64,13 +66,52 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
     }
     
-    func buttonAction(sender: UIButton) {
+    // MARK: - button actions
+    func buttonAction(sender:UIButton) {
+        
+        print(sender);
+    }
+
+    func deleteButtonAction(sender: UIButton) {// sender.tag = 1001 + indexPath.row
+        
+        let indexPath = NSIndexPath(forRow: sender.tag - 1001, inSection: 0);
+        
+        // 
+        if let cell = tableView.cellForRowAtIndexPath(indexPath) as? XXSwipeableCell {
+            cell.overlayView?.removeFromSuperview();
+        }
+        dataArray.removeAtIndex(indexPath.row);
+        
+        tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade);
+        
+        tableView.reloadData();
+       
         print(sender)
+    }
+    
+    func cancleButtonAction(sender:UIButton)  {// sender.tag = 1000 + indexPath.row
+        
+        let indexPath = NSIndexPath(forRow: sender.tag - 1000, inSection: 0);
+
+        if let cell = tableView.cellForRowAtIndexPath(indexPath) as? XXSwipeableCell {
+            cell.close(true);
+        }
+        print(sender);
+    }
+    
+    func collectionButtonAction(sender:UIButton) {// sender.tag = 999 + indexPath.row
+     
+        let indexPath = NSIndexPath(forRow: sender.tag - 999, inSection: 0);
+
+        if let cell = tableView.cellForRowAtIndexPath(indexPath) as? XXSwipeableCell {
+            cell.close(true);
+        }
+        print(sender);
     }
     
     // MARK: - UITableViewDelegate, UITableViewDataSource
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10;
+        return dataArray.count;
     }
     
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
@@ -94,19 +135,50 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell.rightPercentage = CGFloat(Float(rightPercentageLabel.text!)!)
         cell.rightVisiblePercentage = CGFloat(Float(rightVisiblePercentageLabel.text!)!)
         
-        cell.backView.viewWithTag(100)?.removeFromSuperview();
         
+        // Remove the existing buttons before you create them once again.
+        for view in cell.backView.subviews {
+            view.removeFromSuperview();
+        }
         var button = UIButton(type: UIButtonType.System);
-        button.setTitle("Button", forState: UIControlState.Normal);
-        button.addTarget(self, action: #selector(ViewController.buttonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
-        button.sizeToFit();
-        cell.backView.addSubview(button)
-        button.tag = 100;
+        button.setTitleColor(UIColor.whiteColor(), forState: .Normal);
+        button.setTitle("collection", forState: UIControlState.Normal);
+        button.addTarget(self, action: #selector(ViewController.collectionButtonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
+        button.frame = CGRectMake(0, 0, cell.leftVisiblePercentage * CGRectGetWidth(self.view.frame), CGRectGetHeight(cell.frame));
+        cell.backView.addSubview(button);
+        button.tag = 999 + indexPath.row;
+       
+        // The width for each button on right visible backView .
+        let backViewRightVisibleWidth = cell.rightVisiblePercentage * CGRectGetWidth(self.view.frame);
         
+        // For example, we add two items on backView here.
+        let btnWidth = backViewRightVisibleWidth / 2;
+       
+        // The Origin.x of first item on right visible backView.
+        let backViewRightOriginX = (CGRectGetWidth(self.view.frame) - backViewRightVisibleWidth);
+
+        // You can put a button with image on backView.
+        button = UIButton(type: UIButtonType.System);
+        button.setImage(UIImage(named: "cancle"), forState: .Normal);
+        button.addTarget(self, action: #selector(ViewController.cancleButtonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
+        button.frame = CGRectMake(backViewRightOriginX, 0, btnWidth, CGRectGetHeight(cell.frame));
+        cell.backView.addSubview(button)
+        button.tag = 1000 + indexPath.row;
+        
+        // You can also put a button with title on backView.
+        button = UIButton(type: UIButtonType.System);
+        button.setTitleColor(UIColor.whiteColor(), forState: .Normal);
+        button.setTitle("delete", forState: UIControlState.Normal);
+        button.addTarget(self, action: #selector(ViewController.deleteButtonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
+        button.frame = CGRectMake(backViewRightOriginX + btnWidth, 0, btnWidth, CGRectGetHeight(cell.frame));
+        cell.backView.addSubview(button);
+        button.tag = 1001 + indexPath.row;
+       
         cell.frontView.viewWithTag(101)?.removeFromSuperview();
         
+        // You can put anything you want to display on frontView like the backView above.
         button = UIButton(type: UIButtonType.System);
-        button.setTitle("Button", forState: UIControlState.Normal);
+        button.setTitle("frontButton", forState: UIControlState.Normal);
         button.addTarget(self, action: #selector(ViewController.buttonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
         button.sizeToFit();
         cell.frontView.addSubview(button);
