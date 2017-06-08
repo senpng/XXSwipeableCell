@@ -5,21 +5,21 @@
 import UIKit
 
 @objc public protocol XXSwipeableCellDelegate: NSObjectProtocol {
-    optional func swipeableCell(cell: XXSwipeableCell, willBeginSliding slidingPoint: CGPoint)
-    optional func swipeableCell(cell: XXSwipeableCell, didSliding slidingPoint: CGPoint)
-    optional func swipeableCell(cell: XXSwipeableCell, willEndSliding slidingPoint: CGPoint)
-    optional func swipeableCell(cell: XXSwipeableCell, didEndSliding slidingPoint: CGPoint)
+    @objc optional func swipeableCell(_ cell: XXSwipeableCell, willBeginSliding slidingPoint: CGPoint)
+    @objc optional func swipeableCell(_ cell: XXSwipeableCell, didSliding slidingPoint: CGPoint)
+    @objc optional func swipeableCell(_ cell: XXSwipeableCell, willEndSliding slidingPoint: CGPoint)
+    @objc optional func swipeableCell(_ cell: XXSwipeableCell, didEndSliding slidingPoint: CGPoint)
 }
 
-public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
+open class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     
-    weak public var delegate: XXSwipeableCellDelegate?;
+    weak open var delegate: XXSwipeableCellDelegate?;
     
     /// Whether to support multiple cells keep sliding state, default is false.
-    public static var enabledMultipleSliding: Bool = false;
+    open static var enabledMultipleSliding: Bool = false;
     
     /// Open the sliding function
-    public var enabledSliding: Bool = true {
+    open var enabledSliding: Bool = true {
         didSet {
             if enabledSliding == false {
                 self.close(false);
@@ -28,25 +28,25 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     };
     
     /// The duration of the animation
-    public var animationDuration = 0.2;
+    open var animationDuration = 0.2;
     
     /// The trigger ratio of left slide: 0<x<=1, if > 1 or <= 0 leftVisiblePercentage as a block sliding parameter
-    public var leftPercentage: CGFloat = -1.0;
+    open var leftPercentage: CGFloat = -1.0;
     
     /// The trigger ratio of right slide : 0<x<1, if > 1 or <= 0 rightVisiblePerCentage as a block sliding parameter
-    public var rightPercentage: CGFloat = 0.15;
+    open var rightPercentage: CGFloat = 0.15;
     
     /// The visible percentage on the left: 0 <= x <= 1
-    public var leftVisiblePercentage: CGFloat = 0.05;
+    open var leftVisiblePercentage: CGFloat = 0.05;
     
     /// The visible percentage on the right: 0 <= x <= 1
-    public var rightVisiblePercentage: CGFloat = 1.0;
+    open var rightVisiblePercentage: CGFloat = 1.0;
     
     /// The front view in cell.
-    public let frontView = UIView();
+    open let frontView = UIView();
     
     /// The back view in cell.
-    public let backView = UIView();
+    open let backView = UIView();
     
     
     internal var overlayView: XXOverlayView?;
@@ -61,7 +61,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
         initView();
     }
 
-    override public func setSelected(selected: Bool, animated: Bool) {
+    override open func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
@@ -73,7 +73,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
      
      - parameter animated: BOOL, default is false.
      */
-    public func close(animated: Bool) {
+    open func close(_ animated: Bool) {
         self.close(animated, completion: nil);
     }
 
@@ -83,18 +83,18 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
      - parameter animated:   BOOL, default is false.
      - parameter completion: default is nil.
      */
-    public func close(animated: Bool, completion: ((finish: Bool)->Void)?) {
+    open func close(_ animated: Bool, completion: ((_ finish: Bool)->Void)?) {
         
         if animated { // Need animation.
             
-            UIView.animateWithDuration(animationDuration, animations: {
+            UIView.animate(withDuration: animationDuration, animations: {
                 self.frontView.frame.origin.x = 0;
                 }, completion: { (finish) in
                     self.overlayView?.removeFromSuperview();
                     self.overlayView = nil;
                     self.removeTapGestureRecognizer(self.frontView);
                     self.removeTapGestureRecognizer(self.backView);
-                    completion?(finish: finish);
+                    completion?(finish);
             });
         } else { /// Don't need animation.
             
@@ -103,17 +103,17 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             overlayView = nil;
             self.removeTapGestureRecognizer(self.frontView);
             self.removeTapGestureRecognizer(self.backView);
-            completion?(finish: true);
+            completion?(true);
         }
     }
     
     /// Initialize
-    private func initView() {
+    fileprivate func initView() {
         
         self.contentView.addSubview(backView);
         setViewFillConstraint(backView);
         
-        frontView.backgroundColor = UIColor.whiteColor();
+        frontView.backgroundColor = UIColor.white;
         self.contentView.addSubview(frontView);
         setViewFillConstraint(frontView);
         
@@ -131,38 +131,38 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
      
      - parameter v: the view to set up the constraints
      */
-    private func setViewFillConstraint(v: UIView) {
+    fileprivate func setViewFillConstraint(_ v: UIView) {
         
         v.translatesAutoresizingMaskIntoConstraints = false;
         
-        let contraints_V = NSLayoutConstraint.constraintsWithVisualFormat("V:|-0-[view]-0-|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["view":v]);
+        let contraints_V = NSLayoutConstraint.constraints(withVisualFormat: "V:|-0-[view]-0-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["view":v]);
         
-        let contraints_H = NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[view]-0-|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["view":v]);
+        let contraints_H = NSLayoutConstraint.constraints(withVisualFormat: "H:|-0-[view]-0-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["view":v]);
         
         self.contentView.addConstraints(contraints_V);
         self.contentView.addConstraints(contraints_H);
 
     }
     
-    private var savedFrame = CGRectZero;
+    fileprivate var savedFrame = CGRect.zero;
     // MARK: - pan Actions
-    @objc private func panAction(panG: UIPanGestureRecognizer) {
+    @objc fileprivate func panAction(_ panG: UIPanGestureRecognizer) {
         
-        let point = panG.translationInView(self.contentView);
-        let width = CGRectGetWidth(self.contentView.bounds);
+        let point = panG.translation(in: self.contentView);
+        let width = self.contentView.bounds.width;
         
         switch panG.state {
-        case .Began:
+        case .began:
         
             savedFrame = frontView.frame;
             
             self.willBeginSliding(point);
             
-        case .Changed:
+        case .changed:
             
             self.didSliding(point);
             
-            let offsetX = CGRectGetMinX(savedFrame) + point.x;
+            let offsetX = savedFrame.minX + point.x;
             
             frontView.frame.origin.x = offsetX;
             
@@ -170,7 +170,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                 
                 if rightPercentage > 1 || rightPercentage <= 0 {
                     
-                    if CGRectGetMinX(frontView.frame) < width * rightVisiblePercentage * (-1)  {
+                    if frontView.frame.minX < width * rightVisiblePercentage * (-1)  {
                         frontView.frame.origin.x = width * rightVisiblePercentage * (-1);
                     }
                     
@@ -180,7 +180,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                 
                 if leftPercentage > 1 || leftPercentage <= 0 {
                     
-                    if CGRectGetMinX(frontView.frame) > width * leftVisiblePercentage {
+                    if frontView.frame.minX > width * leftVisiblePercentage {
                         frontView.frame.origin.x = width * leftVisiblePercentage;
                     }
                     
@@ -188,7 +188,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
             }
             
             
-        case .Ended:
+        case .ended:
             
             self.willEndSliding(point);
             
@@ -198,8 +198,8 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                         self.didEndSliding(point);
                     })
                 } else {
-                    if CGRectGetMinX(frontView.frame) < width * rightPercentage * (-1) {
-                        UIView.animateWithDuration(animationDuration, animations: {
+                    if frontView.frame.minX < width * rightPercentage * (-1) {
+                        UIView.animate(withDuration: animationDuration, animations: {
                             
                             self.frontView.frame.origin.x = -width*self.rightVisiblePercentage;
                             
@@ -221,9 +221,9 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
                         self.didEndSliding(point);
                     })
                 } else {
-                    if CGRectGetMinX(frontView.frame) > width * leftPercentage {
+                    if frontView.frame.minX > width * leftPercentage {
                         
-                        UIView.animateWithDuration(animationDuration, animations: {
+                        UIView.animate(withDuration: animationDuration, animations: {
                             
                             self.frontView.frame.origin.x = width*self.leftVisiblePercentage;
                             
@@ -249,7 +249,7 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     }
     
     /// Add XXOverlayView
-    private func addOverlayView() {
+    fileprivate func addOverlayView() {
         self.overlayView?.removeFromSuperview();
         
         if XXSwipeableCell.enabledMultipleSliding == false {
@@ -272,9 +272,9 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     }
     
     ///  Remove the gestures on view
-    private func removeTapGestureRecognizer(view: UIView) {
+    fileprivate func removeTapGestureRecognizer(_ view: UIView) {
         
-        guard let gestureRecognizers = view.gestureRecognizers where gestureRecognizers.count > 0 else {
+        guard let gestureRecognizers = view.gestureRecognizers, gestureRecognizers.count > 0 else {
             return;
         }
         
@@ -286,29 +286,29 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     }
     
     // MARK: - UIPanGestureRecognizerDelegate
-    override public func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
+    override open func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         if let panG = gestureRecognizer as? UIPanGestureRecognizer {
             if enabledSliding == false {
                 return false;
             }
-            let distance = panG.translationInView(self);
+            let distance = panG.translation(in: self);
             return abs(distance.x) > abs(distance.y);
         }
         return true;
     }
     
-    private var removingOverlayView = false;
+    fileprivate var removingOverlayView = false;
     // MARK: - OverlayViewDelegate
-    public func overlayView(view: XXOverlayView, didHitTest point: CGPoint, withEvent event: UIEvent?) -> UIView? {
+    open func overlayView(_ view: XXOverlayView, didHitTest point: CGPoint, withEvent event: UIEvent?) -> UIView? {
         
-        var p = frontView.convertPoint(point, fromView: view);
-        if frontView.pointInside(p, withEvent: event) {
-            return frontView.hitTest(p, withEvent: event);
+        var p = frontView.convert(point, from: view);
+        if frontView.point(inside: p, with: event) {
+            return frontView.hitTest(p, with: event);
         }
 
-        p = backView.convertPoint(point, fromView: view);
-        if backView.pointInside(p, withEvent: event) {
-            return backView.hitTest(p, withEvent: event);
+        p = backView.convert(point, from: view);
+        if backView.point(inside: p, with: event) {
+            return backView.hitTest(p, with: event);
         }
         
         if !removingOverlayView {
@@ -324,39 +324,39 @@ public class XXSwipeableCell: UITableViewCell, XXOverlayViewDelegate {
     }
 
     /// Override need super.
-    func willBeginSliding(slidingPoint: CGPoint) {
+    func willBeginSliding(_ slidingPoint: CGPoint) {
         delegate?.swipeableCell?(self, willBeginSliding: slidingPoint);
     }
     
-    func didSliding(slidingPoint: CGPoint) {
+    func didSliding(_ slidingPoint: CGPoint) {
         delegate?.swipeableCell?(self, didSliding: slidingPoint);
     }
     
-    func willEndSliding(slidingPoint: CGPoint) {
+    func willEndSliding(_ slidingPoint: CGPoint) {
         delegate?.swipeableCell?(self, willEndSliding: slidingPoint);
     }
     
-    func didEndSliding(slidingPoint: CGPoint) {
+    func didEndSliding(_ slidingPoint: CGPoint) {
         delegate?.swipeableCell?(self, didEndSliding: slidingPoint);
     }
 }
 
 // MARK: - XXOverlayView
 @objc public protocol XXOverlayViewDelegate {
-    optional func overlayView(view: XXOverlayView, didHitTest point: CGPoint, withEvent event: UIEvent?) -> UIView?;
+    @objc optional func overlayView(_ view: XXOverlayView, didHitTest point: CGPoint, withEvent event: UIEvent?) -> UIView?;
 }
 
 /// Cover the entire screen, disappear when you click on the screen.
-public class XXOverlayView: UIView {
+open class XXOverlayView: UIView {
     
     weak var delegate: XXOverlayViewDelegate?
     
-    override public func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
+    override open func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         
         var result = self.delegate?.overlayView?(self, didHitTest: point, withEvent: event);
         
         if result === self {
-            result = super.hitTest(point, withEvent: event);
+            result = super.hitTest(point, with: event);
         }
         
         return result;
@@ -366,17 +366,17 @@ public class XXOverlayView: UIView {
 // MARK: - extension for UITapGestureRecognizer
 public extension UITapGestureRecognizer {
     
-    typealias ActionBlock = @convention(block) (tapG: UITapGestureRecognizer)->Void;
+    typealias ActionBlock = @convention(block) (_ tapG: UITapGestureRecognizer)->Void;
     
-    private struct AssociatedKeys {
+    fileprivate struct AssociatedKeys {
         static var actionBlockKey = "actionBlockKey"
     }
     
-    private var actionBlock: ActionBlock? {
+    fileprivate var actionBlock: ActionBlock? {
         set {
             
             if let value = newValue {
-                objc_setAssociatedObject(self, &AssociatedKeys.actionBlockKey, unsafeBitCast(value, AnyObject.self), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+                objc_setAssociatedObject(self, &AssociatedKeys.actionBlockKey, unsafeBitCast(value, to: AnyObject.self), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC);
             }
         }
         
@@ -385,11 +385,11 @@ public extension UITapGestureRecognizer {
                 return nil;
             }
 
-            return unsafeBitCast(object, ActionBlock.self);
+            return unsafeBitCast(object, to: ActionBlock.self);
         }
     }
     
-    convenience public init(block: ActionBlock) {
+    convenience public init(block: @escaping ActionBlock) {
         self.init(target: nil, action: nil);
         
         self.addTarget(self, action: #selector(UITapGestureRecognizer.tapAction(_:)))
@@ -397,8 +397,8 @@ public extension UITapGestureRecognizer {
         self.actionBlock = block;
     }
     
-    @objc private func tapAction(tapG: UITapGestureRecognizer) {
-        self.actionBlock?(tapG: self)
+    @objc fileprivate func tapAction(_ tapG: UITapGestureRecognizer) {
+        self.actionBlock?(self)
     }
     
 }

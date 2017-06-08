@@ -17,18 +17,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBOutlet weak var rightPercentageLabel: UILabel!
     @IBOutlet weak var rightVisiblePercentageLabel: UILabel!
     
-    var dataArray = Array (count: 10 , repeatedValue: 0 ) ;
+    var dataArray = Array (repeating: 0 , count: 10 ) ;
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "XXSwipeableCell";
         
-        self.tableView.tableFooterView = UIView();
-        self.tableView.separatorStyle = .None;
+        self.tableView.tableFooterView = UIView();z
+        self.tableView.separatorStyle = .none;
         self.tableView.delegate = self;
         self.tableView.dataSource = self;
         
-        self.tableView.registerClass(XXSwipeableCell.self, forCellReuseIdentifier: "XXSwipeableCell");
+        self.tableView.register(XXSwipeableCell.self, forCellReuseIdentifier: "XXSwipeableCell");
     }
 
     override func didReceiveMemoryWarning() {
@@ -44,7 +44,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         return UIColor(red: r, green: g, blue: b, alpha: 1.0);
     }
 
-    @IBAction func slidingAction(sender: UISlider) {
+    @IBAction func slidingAction(_ sender: UISlider) {
         
         let str = NSString(format: "%.2f", Float(sender.value)) as String;
         
@@ -67,66 +67,66 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     // MARK: - button actions
-    func buttonAction(sender:UIButton) {
+    func buttonAction(_ sender:UIButton) {
         
         print(sender);
     }
 
-    func deleteButtonAction(sender: UIButton) {// sender.tag = 1001 + indexPath.row
+    func deleteButtonAction(_ sender: UIButton) {// sender.tag = 1001 + indexPath.row
         
-        let indexPath = NSIndexPath(forRow: sender.tag - 1001, inSection: 0);
+        let indexPath = IndexPath(row: sender.tag - 1001, section: 0);
         
         // 
-        if let cell = tableView.cellForRowAtIndexPath(indexPath) as? XXSwipeableCell {
+        if let cell = tableView.cellForRow(at: indexPath) as? XXSwipeableCell {
             cell.overlayView?.removeFromSuperview();
         }
-        dataArray.removeAtIndex(indexPath.row);
+        dataArray.remove(at: indexPath.row);
         
-        tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade);
+        tableView.deleteRows(at: [indexPath], with: UITableViewRowAnimation.fade);
         
         tableView.reloadData();
        
         print(sender)
     }
     
-    func cancleButtonAction(sender:UIButton)  {// sender.tag = 1000 + indexPath.row
+    func cancleButtonAction(_ sender:UIButton)  {// sender.tag = 1000 + indexPath.row
         
-        let indexPath = NSIndexPath(forRow: sender.tag - 1000, inSection: 0);
+        let indexPath = IndexPath(row: sender.tag - 1000, section: 0);
 
-        if let cell = tableView.cellForRowAtIndexPath(indexPath) as? XXSwipeableCell {
+        if let cell = tableView.cellForRow(at: indexPath) as? XXSwipeableCell {
             cell.close(true);
         }
         print(sender);
     }
     
-    func collectionButtonAction(sender:UIButton) {// sender.tag = 999 + indexPath.row
+    func collectionButtonAction(_ sender:UIButton) {// sender.tag = 999 + indexPath.row
      
-        let indexPath = NSIndexPath(forRow: sender.tag - 999, inSection: 0);
+        let indexPath = IndexPath(row: sender.tag - 999, section: 0);
 
-        if let cell = tableView.cellForRowAtIndexPath(indexPath) as? XXSwipeableCell {
+        if let cell = tableView.cellForRow(at: indexPath) as? XXSwipeableCell {
             cell.close(true);
         }
         print(sender);
     }
     
     // MARK: - UITableViewDelegate, UITableViewDataSource
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return dataArray.count;
     }
     
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 60.0;
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
 //        let cell = XXSwipeableCell(style: UITableViewCellStyle.Default, reuseIdentifier: "XXSwipeableCell");
-        let cell = tableView.dequeueReusableCellWithIdentifier("XXSwipeableCell") as! XXSwipeableCell;
+        let cell = tableView.dequeueReusableCell(withIdentifier: "XXSwipeableCell") as! XXSwipeableCell;
         
-        cell.selectionStyle = .None;
+        cell.selectionStyle = .none;
         cell.backView.backgroundColor = randomColor();
         
-        if cell.frontView.backgroundColor == UIColor.whiteColor() {
+        if cell.frontView.backgroundColor == UIColor.white {
             cell.frontView.backgroundColor = randomColor();
         }
 
@@ -140,46 +140,46 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         for view in cell.backView.subviews {
             view.removeFromSuperview();
         }
-        var button = UIButton(type: UIButtonType.System);
-        button.setTitleColor(UIColor.whiteColor(), forState: .Normal);
-        button.setTitle("collection", forState: UIControlState.Normal);
-        button.addTarget(self, action: #selector(ViewController.collectionButtonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
-        button.frame = CGRectMake(0, 0, cell.leftVisiblePercentage * CGRectGetWidth(self.view.frame), CGRectGetHeight(cell.frame));
+        var button = UIButton(type: UIButtonType.system);
+        button.setTitleColor(UIColor.white, for: UIControlState());
+        button.setTitle("collection", for: UIControlState());
+        button.addTarget(self, action: #selector(ViewController.collectionButtonAction(_:)), for: UIControlEvents.touchUpInside);
+        button.frame = CGRect(x: 0, y: 0, width: cell.leftVisiblePercentage * self.view.frame.width, height: cell.frame.height);
         cell.backView.addSubview(button);
         button.tag = 999 + indexPath.row;
        
         // The width for each button on right visible backView .
-        let backViewRightVisibleWidth = cell.rightVisiblePercentage * CGRectGetWidth(self.view.frame);
+        let backViewRightVisibleWidth = cell.rightVisiblePercentage * self.view.frame.width;
         
         // For example, we add two items on backView here.
         let btnWidth = backViewRightVisibleWidth / 2;
        
         // The Origin.x of first item on right visible backView.
-        let backViewRightOriginX = (CGRectGetWidth(self.view.frame) - backViewRightVisibleWidth);
+        let backViewRightOriginX = (self.view.frame.width - backViewRightVisibleWidth);
 
         // You can put a button with image on backView.
-        button = UIButton(type: UIButtonType.System);
-        button.setImage(UIImage(named: "cancle"), forState: .Normal);
-        button.addTarget(self, action: #selector(ViewController.cancleButtonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
-        button.frame = CGRectMake(backViewRightOriginX, 0, btnWidth, CGRectGetHeight(cell.frame));
+        button = UIButton(type: UIButtonType.system);
+        button.setImage(UIImage(named: "cancle"), for: UIControlState());
+        button.addTarget(self, action: #selector(ViewController.cancleButtonAction(_:)), for: UIControlEvents.touchUpInside);
+        button.frame = CGRect(x: backViewRightOriginX, y: 0, width: btnWidth, height: cell.frame.height);
         cell.backView.addSubview(button)
         button.tag = 1000 + indexPath.row;
         
         // You can also put a button with title on backView.
-        button = UIButton(type: UIButtonType.System);
-        button.setTitleColor(UIColor.whiteColor(), forState: .Normal);
-        button.setTitle("delete", forState: UIControlState.Normal);
-        button.addTarget(self, action: #selector(ViewController.deleteButtonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
-        button.frame = CGRectMake(backViewRightOriginX + btnWidth, 0, btnWidth, CGRectGetHeight(cell.frame));
+        button = UIButton(type: UIButtonType.system);
+        button.setTitleColor(UIColor.white, for: UIControlState());
+        button.setTitle("delete", for: UIControlState());
+        button.addTarget(self, action: #selector(ViewController.deleteButtonAction(_:)), for: UIControlEvents.touchUpInside);
+        button.frame = CGRect(x: backViewRightOriginX + btnWidth, y: 0, width: btnWidth, height: cell.frame.height);
         cell.backView.addSubview(button);
         button.tag = 1001 + indexPath.row;
        
         cell.frontView.viewWithTag(101)?.removeFromSuperview();
         
         // You can put anything you want to display on frontView like the backView above.
-        button = UIButton(type: UIButtonType.System);
-        button.setTitle("frontButton", forState: UIControlState.Normal);
-        button.addTarget(self, action: #selector(ViewController.buttonAction(_:)), forControlEvents: UIControlEvents.TouchUpInside);
+        button = UIButton(type: UIButtonType.system);
+        button.setTitle("frontButton", for: UIControlState());
+        button.addTarget(self, action: #selector(ViewController.buttonAction(_:)), for: UIControlEvents.touchUpInside);
         button.sizeToFit();
         cell.frontView.addSubview(button);
         button.tag = 101;
@@ -188,9 +188,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
     }
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("tableViewCell didSelect");
-        if let cell = tableView.cellForRowAtIndexPath(indexPath) as? XXSwipeableCell {
+        if let cell = tableView.cellForRow(at: indexPath) as? XXSwipeableCell {
             cell.close(true);
         }
     }
