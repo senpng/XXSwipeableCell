@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "XXSwipeableCell"
-  s.version      = "1.0.4"
+  s.version      = "2.0.0"
   s.summary      = "一个滑动式的UITableViewCell."
 
   # This description is used to generate tags and improve search results.
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   #   * Try to keep it short, snappy and to the point.
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
-  s.description  = <<-DESC 
+  s.description  = <<-DESC
                    一个滑动式的UITableViewCell，扩展性很强。
 	  	   DESC
 
